@@ -2,7 +2,6 @@ import random
 import time
 import sys
 
-startCash = 2_000_000
 delta = 0
 stavkaStart = 25_000
 slot = ''
@@ -14,53 +13,113 @@ matrix = [['', '', '', '', ''],
           ['', '', '', '', '']]
 
 symbols = {
-    1: 'К',  # Кукуруза UA \U0001F1FA\U0001F1E6
-    2: 'G',  # ГОЙДА RU "\U0001F1F7\U0001F1FA"
-    3: 'Z',  # Zov 🤫 \U0001F92B
-    4: 'О',  # Овечка 🐏 \U0001F92B
-    5: 'Г',  # Гитлер 👮 \U0001F46E
-    6: 'Н',  # Стася стерва 😈 \U0001F608
-    7: 'V',  # Кик здорового человека 🍾 \U0001F37E
-    8: 'S',  # Arian classic ⚡ \u26A1
-    9: 'M',  # Monkey 🐒 \U0001F412
-    10: 'R',  # РОДИНА \u262D (☭)
-    11: 'U'  # Украина \U0001F437
+    1: '\U0001F33B',  # 🌻 Кукуруза
+    2: '\U0001F43B',  # 🐻 ГОЙДА
+    3: '\U0001F92B',  # 🤫 Zov
+    4: '\U0001F40F',  # 🐏 Овечка
+    5: '\U0001F46E',  # 👮 Гитлер
+    6: '\U0001F608',  # 😈 Стася стерва
+    7: '\U0001F37E',  # 🍾 Кик
+    8: '\u26A1',  # ⚡ Arian classic
+    9: '\U0001F412',  # 🐒 Monkey
+    10: '\u262D',  # ☭ Родина
+    11: '\U0001F437'  # 🐷 Украина
 }
 
 
-# print("\U0001F4B0")  💰
-# print("\U0001F3B0")  🎰
-def board(gambling):
-    if gambling == True:
+def board(roaling):
+    if roaling:
         for i in range(len(matrix)):
-            for j in range(len(matrix)):
-                matrix[i][j] = random.randint(1, 7)
-        # for row in matrix:
-        #    print(' | '.join(row))
-        # print('-' * 25)
-        # print(matrix)
-    else:
-        print('Увё казик закрiт, перемоги и грошей не будэ цсуко\U0001F595')
-        return False
+            for j in range(len(matrix[i])):
+                matrix[i][j] = symbols[random.randint(1, 11)]
 
-print('Дабро пожаловать в казино, пес де патрон')
-print('С вашего позволения, как к вам обращаться?' + '\n' + '1 - Не позволяю цсуко. 2 - Ввести имя')
+
+def scores():
+    global delta, nowCash
+
+    winnings = 0
+    matches = []
+
+    # Строки
+    for i in range(5):
+        row = matrix[i]
+        if all(cell == row[0] for cell in row):
+            winnings += stavkaStart * 3
+            matches.append(f"💥 Строка {i + 1}: 5x {row[0]}")
+
+    # Центр-вертикаль
+    center_col = [matrix[i][2] for i in range(5)]
+    if all(cell == center_col[0] for cell in center_col):
+        winnings += stavkaStart * 4
+        matches.append(f"💥 Центр-вертикаль: 5x {center_col[0]}")
+
+    # Джекпот — вся матрица одинаковая
+    flat = [cell for row in matrix for cell in row]
+    if all(cell == flat[0] for cell in flat):
+        jackpot_symbol = flat[0]
+        jackpot_win = stavkaStart * 10
+        winnings += jackpot_win
+        matches.append(f"🎰🎰🎰 ДЖЕКПОТ!!! Вся матрица = {jackpot_symbol} — +💰 {jackpot_win:,}")
+
+    # Минус ставка
+    nowCash -= stavkaStart
+
+    if winnings > 0:
+        delta += winnings
+        print(f"\n🎉 ПОБЕДА! +💰 {winnings:,}")
+        for m in matches:
+            print(m)
+    else:
+        print(f"\n😢 Проигрыш. -💸 {stavkaStart:,}")
+
+    total_cash = nowCash + delta
+    print(f"\n💼 Баланс игрока: {total_cash:,} 💰")
+    print("-" * 45)
+
+    # Если денег нет — вылет
+    if total_cash < stavkaStart:
+        print("❌ У тебя не осталось денег на ставку. Вылет из казино.")
+        print(f"🧾 Финальный счёт: {total_cash:,}")
+        sys.exit(0)
+
+
+# 👋 Приветствие
+print('Добро пожаловать в казино, ZOV патрон')
+print('С вашего позволения, как к вам обращаться?\n1 - Не позволяю цсуко.\n2 - Ввести имя')
 nm = int(input())
 if nm == 1:
-    print('Ладно тепеь вы El Chuvachini')
+    print('Ладно, теперь вы El Chuvachini')
     name = 'Эль чувачини'
 else:
     time.sleep(1.5)
-    print('Значит вы не мразь, вау.', '\n', 'фух... ну введите пожалуйста имя ваше')
+    print('Значит вы не мразь, вау.\nФух... ну введите, пожалуйста, имя ваше:')
     name = input()
 
-while (True):
-    print('Нажми 1 чтобы начать крутку, нажми 2 чтобы выйти из окна к примеру')
+print(f"{name}, введите ваш стартовый капитал. P.S. Меньше 25000 — гарантированный проёб:")
+startCash = int(input())
+nowCash = startCash
+
+# 🔁 Основной цикл
+while True:
+    print('\nНажми 1 чтобы начать крутку 🎰\nНажми 2 чтобы выйти из окна')
     gmove = int(input())
+
     if gmove == 2:
-        print('Ну и пошёл нахуй\U0001F595, твой кеш составляет \U0001F449', startCash + delta, '\U0001F448')
+        print(f'Ну и пошёл нахуй 🖕, твой кеш составляет 👉 {nowCash + delta:,} 👈')
         sys.exit(0)
-    else:
-        print('\U0001F3B0 СЛОТЫ ЗАПУЩЕНЫ')
+
+    elif gmove == 1:
+        if nowCash + delta < stavkaStart:
+            print("💀 У тебя не хватает денег даже на ставку. Ты выбыл.")
+            print(f"🪦 Финальный баланс: {nowCash + delta:,} 💸")
+            sys.exit(0)
+
+        print('\n🎰 СЛОТЫ ЗАПУЩЕНЫ 🎰\n')
         board(True)
-        print(matrix)
+        for row in matrix:
+            print(' | '.join(row))
+        print("-" * 45)
+        scores()
+
+    else:
+        print("⚠️ Некорректный ввод. Попробуй снова.")
